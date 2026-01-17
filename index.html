@@ -18,6 +18,12 @@
             </header>
 
             <main>
+                <!-- Guide Button -->
+                <div class="guide-banner">
+                    <button class="btn-guide" id="guideBtn">📚 Writing Guide</button>
+                    <button class="btn-admin" id="adminBtn">🔐 Admin</button>
+                </div>
+
                 <!-- Story Submission Form -->
                 <section class="submission-section">
                     <h2>✍️ Share Your Story</h2>
@@ -47,7 +53,7 @@
                 <!-- Stories Display Section -->
                 <section class="stories-section">
                     <h2>📚 Recent Stories (<span id="storyCount">0</span>)</h2>
-                    <div id="storiesContainer" class="stories-container">
+                    <div id="storiesContainer" class="stories-tiles">
                         <p class="empty-state">No stories yet. Be the first to share!</p>
                     </div>
                 </section>
@@ -76,6 +82,75 @@
             <footer>
                 <p>Made with ❤️ | Stories stored locally in your browser</p>
             </footer>
+        </div>
+    </div>
+
+    <!-- Guide Modal -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <button class="btn-close" id="closeGuideBtn">&times;</button>
+            <h2>📚 How to Write an Effective Story</h2>
+            <div class="guide-content">
+                <div class="guide-section">
+                    <h3>1. Start with a Compelling Hook</h3>
+                    <p>Grab your reader's attention in the first few sentences. Ask a question, introduce an unusual character, or start with action.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>2. Develop Your Characters</h3>
+                    <p>Create believable characters with clear motivations. Show their personality through dialogue and actions, not just description.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>3. Build a Clear Plot</h3>
+                    <p>Structure your story with: Introduction → Rising Action → Climax → Resolution. Keep it logical and engaging.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>4. Show, Don't Tell</h3>
+                    <p>Use vivid descriptions and dialogue to show emotions and events rather than explaining them directly to readers.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>5. Use Descriptive Language</h3>
+                    <p>Paint a picture with sensory details. Engage the reader's senses with descriptions of sight, sound, smell, taste, and touch.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>6. Create Conflict</h3>
+                    <p>Stories need tension. Introduce obstacles and challenges that your characters must overcome to keep readers engaged.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>7. Maintain Pacing</h3>
+                    <p>Vary sentence length and paragraph size. Mix dialogue, action, and description to keep the story flowing smoothly.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>8. End Memorably</h3>
+                    <p>End with impact. Whether happy, sad, or surprising, leave your reader with something to think about.</p>
+                </div>
+                <div class="guide-section">
+                    <h3>9. Edit and Proofread</h3>
+                    <p>Read your story aloud. Fix grammar, spelling, and awkward phrasing. Good editing makes great stories!</p>
+                </div>
+                <div class="guide-section">
+                    <h3>10. Respect Our Community</h3>
+                    <p>Write original content. Avoid explicit violence or hate speech. Share stories that entertain and inspire others.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <button class="btn-close" id="closeAdminBtn">&times;</button>
+            <h2>🔐 Moderation Panel</h2>
+            <div id="adminPanel" class="admin-panel">
+                <div class="admin-login">
+                    <input 
+                        type="password" 
+                        id="adminPassword" 
+                        placeholder="Enter admin password"
+                        autocomplete="off"
+                    >
+                    <button class="btn-primary" id="adminLoginBtn">Unlock Panel</button>
+                </div>
+            </div>
         </div>
     </div>
 
