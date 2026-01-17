@@ -135,10 +135,9 @@ function setupGuideButton() {
     const guideModal = document.getElementById('guideModal');
     const closeGuideBtn = document.getElementById('closeGuideBtn');
 
-    if (!guideBtn || !guideModal) return;
-
     guideBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         guideModal.classList.add('active');
     });
 
@@ -161,9 +160,9 @@ function setupAdminButton() {
     const adminLoginBtn = document.getElementById('adminLoginBtn');
     const adminPassword = document.getElementById('adminPassword');
 
-    if (!adminBtn || !adminModal) return;
-
-    adminBtn.addEventListener('click', () => {
+    adminBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         adminModal.classList.add('active');
         adminUnlocked = false;
         adminPassword.value = '';
