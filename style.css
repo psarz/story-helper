@@ -129,6 +129,43 @@ main {
     padding: 30px;
 }
 
+/* Kindle-style Reading Experience */
+.story-detail {
+    background: #fafaf8;
+    padding: 48px 40px;
+    font-family: 'Georgia', 'Garamond', serif;
+    line-height: 1.9;
+    letter-spacing: 0.3px;
+    word-spacing: 0.1em;
+}
+
+.story-detail h1 {
+    font-size: 2.8em;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+}
+
+.story-detail .story-meta {
+    margin-bottom: 40px;
+    font-size: 0.95em;
+    color: #666;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 20px;
+}
+
+.story-detail .story-content {
+    font-size: 1.15em;
+    line-height: 1.95;
+    margin-bottom: 40px;
+    color: #2a2a2a;
+    text-align: justify;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
 /* Guide Banner */
 .guide-banner {
     display: flex;
@@ -501,7 +538,7 @@ main {
 
 /* Modals */
 .modal {
-    display: none;
+    display: none !important;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -513,7 +550,7 @@ main {
 }
 
 .modal.active {
-    display: flex;
+    display: flex !important;
     justify-content: center;
     align-items: center;
 }

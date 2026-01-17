@@ -2,11 +2,13 @@
 const STORAGE_KEY = 'storyHelperStories';
 const FLAGGED_KEY = 'storyHelperFlagged';
 const ADMIN_PASSWORD = 'admin123'; // Site owner can change this
+const SAMPLE_STORIES_KEY = 'sampleStoriesAdded';
 let currentStoryId = null;
 let adminUnlocked = false;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
+    addSampleStoriesIfNeeded();
     loadAndDisplayStories();
     setupFormListener();
     setupCharCounter();
@@ -15,13 +17,128 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAdminButton();
 });
 
+// Add sample stories on first visit
+function addSampleStoriesIfNeeded() {
+    if (localStorage.getItem(SAMPLE_STORIES_KEY)) {
+        return; // Already added
+    }
+
+    const sampleStories = [
+        {
+            id: Date.now() - 100000,
+            title: "The Last Library",
+            content: `In the year 2087, when books existed only in digital form and paper was a forgotten memory, Maya discovered something extraordinary in her grandmother's attic.
+
+A real book. Bound in leather, its pages yellowed but intact. The title read "The Lord of the Rings."
+
+She had never seen one before. Her generation read on screens—immersive, interactive, but somehow soulless. This object felt different. It had weight. Substance. History.
+
+That night, she opened it. The words drew her in like nothing digital ever had. The prose painted vivid pictures in her mind. She wasn't just reading; she was experiencing another world, transported by the author's carefully chosen words.
+
+By morning, she had read fifty pages without stopping. Her eyes were tired, but her heart was alive.
+
+Maya realized then that some things—real, tangible, thoughtfully created—could never be replaced by technology. There was magic in the old ways, in the quiet act of reading by lamplight, turning physical pages, discovering words that had survived generations.
+
+She decided then: she would find more books. She would read them. And when she was older, she would share this magic with others who had forgotten it existed.
+
+The last library, she thought, smiling, would be rebuilt one reader at a time.`,
+            timestamp: new Date(Date.now() - 100000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            ratings: [9, 8, 10, 9, 7]
+        },
+        {
+            id: Date.now() - 200000,
+            title: "A Cup of Tea",
+            content: `The café smelled of cinnamon and old wood. Sarah sat in the corner booth, the same one she'd occupied every Tuesday morning for the past five years.
+
+The barista, Marco, already had her order ready. Chamomile tea with honey. He knew her better than her own family did at this point.
+
+Today felt different, though. Today, Sarah had made a decision.
+
+She had spent twenty years in a job she hated. Twenty years pretending to be someone she wasn't. Twenty years saying "yes" when she meant "no."
+
+But not anymore.
+
+As she wrapped her hands around the warm cup, a sense of peace washed over her. The tea was perfectly steeped—not too strong, not too weak. Just right. Like everything would be, from now on.
+
+Marco walked by and smiled. "You look happy," he said. "Happier than usual."
+
+Sarah smiled back. "I am, actually. I just made a decision. I'm quitting my job next week."
+
+Marco set down a plate of complimentary biscuits. "Good for you. Life's too short for jobs you hate."
+
+As she sipped her tea, Sarah watched the morning light stream through the café windows. Outside, the world looked full of possibilities. Her hands were shaking—not from fear, but from excitement.
+
+This cup of tea had become more than just a ritual. It was a marker. Before this moment, and after it.
+
+Sometimes, Sarah thought, the biggest decisions come in the quietest moments.`,
+            timestamp: new Date(Date.now() - 200000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            ratings: [8, 9, 8, 10]
+        },
+        {
+            id: Date.now() - 300000,
+            title: "The Letter",
+            content: `It had been three years since the funeral. Three years since anyone had seen inside her father's desk drawer.
+
+His letter sat on top—cream-colored envelope, his handwriting sprawled across it: "To be opened when you stop running from yourself."
+
+Elena had found it by accident while moving. Her first instinct was to throw it away. She wasn't ready. She didn't know if she'd ever be ready.
+
+But the words on the envelope stayed with her for weeks.
+
+One rainy afternoon, sitting alone in her apartment, she finally opened it.
+
+Her father had always seen through her masks. Even as a child, when she pretended to be happy, he knew. When she claimed to be fine after her first heartbreak, he knew.
+
+The letter was long—pages and pages of careful, loving handwriting. He wrote about the mistakes he'd made. About how he'd wish he'd told her certain things while he was alive. About how proud he was of her, even when she didn't believe in herself.
+
+And then came the part that made her cry:
+
+"The person you're meant to be is already inside you. Stop running from her. She's worth knowing."
+
+Elena read the letter three times that day. Then again the next day. And the day after.
+
+Her father had seen her truth before she ever could. And even after death, his words reached her, wrapped around her like an embrace, telling her that it was finally okay to be herself.
+
+She framed the letter. And the next morning, she woke up and did something different: she stopped running.`,
+            timestamp: new Date(Date.now() - 300000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            ratings: [10, 9, 10]
+        }
+    ];
+
+    const currentStories = getStories();
+    const allStories = [...sampleStories, ...currentStories];
+    saveStories(allStories);
+    localStorage.setItem(SAMPLE_STORIES_KEY, 'true');
+}
+
 // Setup guide button
 function setupGuideButton() {
     const guideBtn = document.getElementById('guideBtn');
     const guideModal = document.getElementById('guideModal');
     const closeGuideBtn = document.getElementById('closeGuideBtn');
 
-    guideBtn.addEventListener('click', () => {
+    if (!guideBtn || !guideModal) return;
+
+    guideBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         guideModal.classList.add('active');
     });
 
@@ -44,20 +161,25 @@ function setupAdminButton() {
     const adminLoginBtn = document.getElementById('adminLoginBtn');
     const adminPassword = document.getElementById('adminPassword');
 
+    if (!adminBtn || !adminModal) return;
+
     adminBtn.addEventListener('click', () => {
         adminModal.classList.add('active');
         adminUnlocked = false;
+        adminPassword.value = '';
     });
 
     closeAdminBtn.addEventListener('click', () => {
         adminModal.classList.remove('active');
         adminUnlocked = false;
+        adminPassword.value = '';
     });
 
     adminModal.addEventListener('click', (e) => {
         if (e.target === adminModal) {
             adminModal.classList.remove('active');
             adminUnlocked = false;
+            adminPassword.value = '';
         }
     });
 
@@ -67,7 +189,7 @@ function setupAdminButton() {
             displayModerationPanel();
             adminPassword.value = '';
         } else {
-            alert('Incorrect password');
+            alert('❌ Incorrect password');
             adminPassword.value = '';
         }
     });
@@ -90,25 +212,37 @@ function displayModerationPanel() {
         return;
     }
 
-    let html = '<div class="admin-content"><h3>Stories to Moderate</h3>';
+    let html = `
+        <div class="admin-content">
+            <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                Stories to Moderate
+                <span style="font-size: 0.8em; color: #666;">Total: ${stories.length} | Flagged: ${flaggedIds.length}</span>
+            </h3>
+    `;
 
-    stories.forEach(story => {
+    stories.forEach((story, index) => {
         const isFlagged = flaggedIds.includes(story.id);
-        const flaggedClass = isFlagged ? 'style="background-color: #ffebee;"' : '';
+        const flaggedClass = isFlagged ? 'background-color: #ffebee; border-left: 4px solid #ff4444;' : '';
 
         html += `
-            <div class="moderation-story" ${flaggedClass}>
-                <h4>${escapeHtml(story.title)}</h4>
-                <div class="story-preview">${escapeHtml(story.content.substring(0, 100))}</div>
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">
-                    ${story.timestamp} | ${story.ratings.length} ratings | ${isFlagged ? '⚠️ FLAGGED' : '✓ OK'}
+            <div class="moderation-story" style="${flaggedClass}">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                    <h4 style="margin: 0; flex: 1;">${index + 1}. ${escapeHtml(story.title)}</h4>
+                    ${isFlagged ? '<span style="background: #ff4444; color: white; padding: 4px 8px; border-radius: 3px; font-size: 0.75em; font-weight: bold;">⚠️ FLAGGED</span>' : ''}
+                </div>
+                <div class="story-preview" style="margin: 0 0 12px 0; padding: 0; line-height: 1.5; color: #666;">${escapeHtml(story.content.substring(0, 120))}...</div>
+                <div style="font-size: 0.85em; color: #999; margin-bottom: 12px; display: flex; gap: 15px;">
+                    <span>📅 ${story.timestamp}</span>
+                    <span>⭐ ${story.ratings.length} ratings</span>
+                    <span>📝 ${story.content.length} chars</span>
                 </div>
                 <div class="moderation-actions">
-                    <button class="btn-delete" onclick="deleteStory(${story.id})">🗑️ Delete Story</button>
+                    <button class="btn-delete" onclick="deleteStory(${story.id})">🗑️ Delete</button>
                     ${isFlagged 
-                        ? `<button class="btn-flag" onclick="unflagStory(${story.id})">✓ Unflag</button>` 
-                        : `<button class="btn-flag" onclick="flagStory(${story.id})">⚠️ Flag for Review</button>`
+                        ? `<button class="btn-flag" onclick="unflagStory(${story.id})" style="background: #4caf50;">✓ Unflag</button>` 
+                        : `<button class="btn-flag" onclick="flagStory(${story.id})">⚠️ Flag</button>`
                     }
+                    <button class="btn-flag" onclick="viewStoryAsAdmin(${story.id})" style="background: #2196F3;">👁️ View</button>
                 </div>
             </div>
         `;
@@ -331,7 +465,7 @@ function displayStoryDetail(storyId) {
                 <span>📝 ${story.content.length} characters</span>
             </div>
             <div class="story-content">
-                ${escapeHtml(story.content)}
+                ${escapeHtml(story.content).split('\n\n').join('</p><p>')}
             </div>
             <div class="rating-section">
                 <h3>⭐ Ratings & Reviews</h3>
@@ -436,4 +570,11 @@ function deleteStory(storyId) {
 
     displayModerationPanel();
     loadAndDisplayStories();
+}
+
+// View story from admin panel
+function viewStoryAsAdmin(storyId) {
+    const adminModal = document.getElementById('adminModal');
+    adminModal.classList.remove('active');
+    navigateToStory(storyId);
 }
