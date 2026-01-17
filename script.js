@@ -1,12 +1,22 @@
 // Storage key for localStorage
 const STORAGE_KEY = 'storyHelperStories';
+let currentStoryId = null;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     loadAndDisplayStories();
     setupFormListener();
     setupCharCounter();
+    setupBackButton();
 });
+
+// Setup back button
+function setupBackButton() {
+    const backBtn = document.getElementById('backBtn');
+    backBtn.addEventListener('click', () => {
+        navigateToFeed();
+    });
+}
 
 // Form submission handler
 function setupFormListener() {
@@ -23,6 +33,22 @@ function setupCharCounter() {
     textarea.addEventListener('input', () => {
         document.getElementById('charCount').textContent = textarea.value.length;
     });
+}
+
+// Page navigation
+function navigateToFeed() {
+    document.getElementById('feedPage').classList.add('active');
+    document.getElementById('storyPage').classList.remove('active');
+    currentStoryId = null;
+    loadAndDisplayStories();
+}
+
+function navigateToStory(storyId) {
+    currentStoryId = storyId;
+    displayStoryDetail(storyId);
+    document.getElementById('feedPage').classList.remove('active');
+    document.getElementById('storyPage').classList.add('active');
+    window.scrollTo(0, 0);
 }
 
 // Submit a new story
@@ -87,20 +113,11 @@ function loadAndDisplayStories() {
     count.textContent = stories.length;
 
     if (stories.length === 0) {
-        container.innerHTML = '<p class="empty-state">No stories yet. Be the first to share!</p>';
+        container.innerHTML = '<p class="empty-state">No stories yet. Be the first to share! 📝</p>';
         return;
     }
 
     container.innerHTML = stories.map(story => createStoryCard(story)).join('');
-
-    // Attach event listeners to all rate buttons
-    document.querySelectorAll('.btn-rate').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const storyId = parseInt(e.target.dataset.storyId);
-            const rating = parseInt(e.target.previousElementSibling.value);
-            rateStory(storyId, rating);
-        });
-    });
 }
 
 // Create HTML for a story card
@@ -112,16 +129,22 @@ function createStoryCard(story) {
 
     const ratingCount = story.ratings.length;
     const countText = ratingCount === 0 
-        ? 'No ratings yet' 
+        ? 'No ratings' 
         : `${ratingCount} rating${ratingCount !== 1 ? 's' : ''}`;
 
+    // Create preview text
+    const previewText = story.content.substring(0, 150) + (story.content.length > 150 ? '...' : '');
+
     return `
-        <div class="story-card">
+        <div class="story-card" onclick="navigateToStory(${story.id})">
             <div class="story-header">
                 <div class="story-title">${escapeHtml(story.title)}</div>
-                <div class="story-meta">Posted on ${story.timestamp}</div>
+                <div class="story-meta">
+                    <span>📅 ${story.timestamp}</span>
+                    <span>📝 ${story.content.length} chars</span>
+                </div>
             </div>
-            <div class="story-content">${escapeHtml(story.content)}</div>
+            <div class="story-preview">${escapeHtml(previewText)}</div>
             <div class="story-footer">
                 <div class="rating-display">
                     ${ratingDisplay}
@@ -135,8 +158,9 @@ function createStoryCard(story) {
                         max="10" 
                         value="5"
                         aria-label="Rate this story"
+                        onclick="event.stopPropagation()"
                     >
-                    <button class="btn-rate" data-story-id="${story.id}">Rate</button>
+                    <button class="btn-rate" data-story-id="${story.id}" onclick="event.stopPropagation(); rateStory(${story.id}, this)">⭐ Rate</button>
                 </div>
             </div>
         </div>
@@ -144,7 +168,10 @@ function createStoryCard(story) {
 }
 
 // Rate a story
-function rateStory(storyId, rating) {
+function rateStory(storyId, buttonElement) {
+    const ratingInput = buttonElement.previousElementSibling;
+    const rating = parseInt(ratingInput.value);
+
     if (rating < 1 || rating > 10 || !Number.isInteger(rating)) {
         alert('Please enter a rating between 1 and 10');
         return;
@@ -156,7 +183,100 @@ function rateStory(storyId, rating) {
     if (story) {
         story.ratings.push(rating);
         saveStories(stories);
-        loadAndDisplayStories();
+        
+        // Update the display
+        if (currentStoryId === storyId) {
+            displayStoryDetail(storyId);
+        } else {
+            loadAndDisplayStories();
+        }
+        
+        ratingInput.value = '5';
+    }
+}
+
+// Display detailed story view
+function displayStoryDetail(storyId) {
+    const stories = getStories();
+    const story = stories.find(s => s.id === storyId);
+
+    if (!story) {
+        navigateToFeed();
+        return;
+    }
+
+    const avgRating = getAverageRating(story);
+    const ratingCount = story.ratings.length;
+
+    let ratingStatsHtml = '';
+    if (ratingCount > 0) {
+        const minRating = Math.min(...story.ratings);
+        const maxRating = Math.max(...story.ratings);
+        
+        ratingStatsHtml = `
+            <div class="rating-stats">
+                <div class="stat-box">
+                    <div class="stat-value">${avgRating.toFixed(1)}</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${ratingCount}</div>
+                    <div class="stat-label">Total Rating${ratingCount !== 1 ? 's' : ''}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    const detailHtml = `
+        <div class="story-detail">
+            <h1>${escapeHtml(story.title)}</h1>
+            <div class="story-meta">
+                <span>📅 Posted on ${story.timestamp}</span>
+                <span>📝 ${story.content.length} characters</span>
+            </div>
+            <div class="story-content">
+                ${escapeHtml(story.content)}
+            </div>
+            <div class="rating-section">
+                <h3>⭐ Ratings & Reviews</h3>
+                ${ratingStatsHtml}
+                <div class="rating-control" style="margin-top: 15px;">
+                    <input 
+                        type="number" 
+                        class="rating-input" 
+                        id="detailRatingInput"
+                        min="1" 
+                        max="10" 
+                        value="5"
+                        aria-label="Rate this story"
+                    >
+                    <button class="btn-rate" onclick="rateStoryDetail(${storyId})">⭐ Submit Rating</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('storyDetailContent').innerHTML = detailHtml;
+}
+
+// Rate from detail view
+function rateStoryDetail(storyId) {
+    const ratingInput = document.getElementById('detailRatingInput');
+    const rating = parseInt(ratingInput.value);
+
+    if (rating < 1 || rating > 10 || !Number.isInteger(rating)) {
+        alert('Please enter a rating between 1 and 10');
+        return;
+    }
+
+    const stories = getStories();
+    const story = stories.find(s => s.id === storyId);
+
+    if (story) {
+        story.ratings.push(rating);
+        saveStories(stories);
+        displayStoryDetail(storyId);
+        ratingInput.value = '5';
     }
 }
 
